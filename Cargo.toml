@@ -1,0 +1,8 @@
+[package]
+name = "rust_test"
+version = "0.1.0"
+authors = ["Johannes Kresner <johannes.kresner@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+crossterm = "0.25.0"
