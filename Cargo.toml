@@ -1,5 +1,5 @@
 [package]
-name = "rust_test"
+name = "rust_editor"
 version = "0.1.0"
 authors = ["Johannes Kresner <johannes.kresner@gmail.com>"]
 edition = "2021"
