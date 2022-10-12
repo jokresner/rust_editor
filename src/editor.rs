@@ -3,7 +3,7 @@ use std::io::{self, Write};
 
 use crossterm::{
     event::{read, Event, KeyCode, KeyModifiers},
-    terminal::enable_raw_mode,
+    terminal::{enable_raw_mode, self, Clear},
 };
 
 pub struct Editor {
@@ -16,13 +16,13 @@ impl Editor {
 
         loop {
             if let Err(err) = self.refresh_screen() {
-                die(err);
+                die(&err);
             }
             if self.should_quit {
                 break;
             }
             if let Err(err) = self.process_keypress() {
-                die(err);
+                die(&err);
             }
         }
     }
@@ -32,7 +32,7 @@ impl Editor {
     }
 
     fn refresh_screen(&self) -> Result<(),std::io::Error>{
-        //TODO crossterm::terminal::Clear
+        Clear(terminal::ClearType::All);
         io::stdout().flush()
     }
 
@@ -41,7 +41,7 @@ impl Editor {
         match key {
             Event::Key(key) => {
                 if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('q') {
-                    self.should_quit = true
+                    self.should_quit = true;
                 } else if key.modifiers.intersects(KeyModifiers::all()) {
                 } else {
                 }
@@ -52,6 +52,6 @@ impl Editor {
     }
 }
 
-fn die(err: std::io::Error) {
+fn die(err: &std::io::Error) {
     panic!("{}", err);
 }
