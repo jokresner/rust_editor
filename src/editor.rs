@@ -1,9 +1,9 @@
 use core::panic;
-use std::io::{self, Write};
+use std::io::{self, Write, stdout};
 
 use crossterm::{
     event::{read, Event, KeyCode, KeyModifiers},
-    terminal::{enable_raw_mode, self, Clear},
+    terminal::{enable_raw_mode, self, Clear}, execute,
 };
 
 pub struct Editor {
@@ -32,8 +32,7 @@ impl Editor {
     }
 
     fn refresh_screen(&self) -> Result<(),std::io::Error>{
-        Clear(terminal::ClearType::All);
-        io::stdout().flush()
+        execute!(stdout(),Clear(terminal::ClearType::All))
     }
 
     fn process_keypress(&mut self) -> Result<(), std::io::Error> {
