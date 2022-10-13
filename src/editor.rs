@@ -1,13 +1,17 @@
 use core::panic;
-use std::io::{self, Write, stdout};
+use std::io::{stdout, Write};
 
 use crossterm::{
+    cursor,
     event::{read, Event, KeyCode, KeyModifiers},
-    terminal::{enable_raw_mode, self, Clear}, execute,
+    terminal::{enable_raw_mode, Clear},
 };
+
+use crate::terminal::Terminal;
 
 pub struct Editor {
     should_quit: bool,
+    terminal: Terminal,
 }
 
 impl Editor {
@@ -28,11 +32,31 @@ impl Editor {
     }
 
     pub fn default() -> Self {
-        Self {should_quit: false}
+        Self { 
+            should_quit: false,
+            terminal: Terminal::default().expect("Failed to initialize terminal.")
+        }
     }
 
-    fn refresh_screen(&self) -> Result<(),std::io::Error>{
-        execute!(stdout(),Clear(terminal::ClearType::All))
+    fn refresh_screen(&self) -> Result<(), std::io::Error> {
+        print!(
+            "{}{}",
+            Clear(crossterm::terminal::ClearType::All),
+            cursor::MoveTo(0, 0)
+        );
+        if self.should_quit {
+            println!("Goodbye.\n")
+        } else {
+            self.draw_rows();
+            print!("{}", cursor::MoveTo(0, 0));
+        }
+        stdout().flush()
+    }
+
+    fn draw_rows(&self) {
+        for _ in 0..self.terminal.size().height {
+            println!("~\r");
+        }
     }
 
     fn process_keypress(&mut self) -> Result<(), std::io::Error> {
@@ -44,7 +68,7 @@ impl Editor {
                 } else if key.modifiers.intersects(KeyModifiers::all()) {
                 } else {
                 }
-            },
+            }
             _ => (),
         }
         Ok(())
@@ -52,5 +76,6 @@ impl Editor {
 }
 
 fn die(err: &std::io::Error) {
+    print!("{}", Clear(crossterm::terminal::ClearType::All));
     panic!("{}", err);
 }
