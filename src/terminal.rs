@@ -1,24 +1,62 @@
-pub struct Size{
+use std::io::{stdout, Write};
+
+use crossterm::terminal::enable_raw_mode;
+
+pub struct Size {
     pub width: u16,
     pub height: u16,
 }
 
 pub struct Terminal {
     size: Size,
+    _stdout: Result<(), std::io::Error>,
 }
 
 impl Terminal {
-    pub fn default() -> Result<Self,std::io::Error>{
+    pub fn default() -> Result<Self, std::io::Error> {
         let size = crossterm::terminal::size().unwrap();
-        Ok(Self{
-            size: Size { 
+        Ok(Self {
+            size: Size {
                 width: size.0,
-                height: size.1 
-            }
+                height: size.1,
+            },
+            _stdout: enable_raw_mode(),
         })
     }
 
     pub fn size(&self) -> &Size {
         &self.size
+    }
+
+    pub fn clear_screen() {
+        print!(
+            "{}",
+            crossterm::terminal::Clear(crossterm::terminal::ClearType::All)
+        );
+    }
+
+    pub fn clear_line() {
+        print!(
+            "{}",
+            crossterm::terminal::Clear(crossterm::terminal::ClearType::CurrentLine)
+        );
+    }
+
+    pub fn cursor_position(x: u16, y: u16) {
+        let x = x.saturating_add(0);
+        let y = y.saturating_add(0);
+        print!("{}", crossterm::cursor::MoveTo(x, y));
+    }
+
+    pub fn flush() -> Result<(), std::io::Error> {
+        stdout().flush()
+    }
+
+    pub fn cursor_hide() {
+        print!("{}", crossterm::cursor::Hide);
+    }
+
+    pub fn cursor_show() {
+        print!("{}", crossterm::cursor::Show);
     }
 }

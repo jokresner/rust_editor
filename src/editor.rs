@@ -7,7 +7,7 @@ use crossterm::{
     terminal::{enable_raw_mode, Clear},
 };
 
-use crate::terminal::Terminal;
+use crate::Terminal;
 
 pub struct Editor {
     should_quit: bool,
@@ -16,8 +16,6 @@ pub struct Editor {
 
 impl Editor {
     pub fn run(&mut self) {
-        let _raw = enable_raw_mode();
-
         loop {
             if let Err(err) = self.refresh_screen() {
                 die(&err);
@@ -39,22 +37,22 @@ impl Editor {
     }
 
     fn refresh_screen(&self) -> Result<(), std::io::Error> {
-        print!(
-            "{}{}",
-            Clear(crossterm::terminal::ClearType::All),
-            cursor::MoveTo(0, 0)
-        );
+        Terminal::cursor_hide();
+        Terminal::clear_line();
+        Terminal::cursor_position(0, 0);
         if self.should_quit {
-            println!("Goodbye.\n")
+            Terminal::clear_screen();
+            println!("Goodbye.\n");
         } else {
             self.draw_rows();
-            print!("{}", cursor::MoveTo(0, 0));
+            Terminal::cursor_position(0, 0);
         }
-        stdout().flush()
+        Terminal::cursor_show();
+        Terminal::flush()
     }
 
     fn draw_rows(&self) {
-        for _ in 0..self.terminal.size().height {
+        for _ in 0..self.terminal.size().height - 1 {
             println!("~\r");
         }
     }
