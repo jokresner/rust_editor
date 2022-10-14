@@ -61,11 +61,26 @@ impl Editor {
 
     fn move_cursor(&mut self, key: KeyCode) {
         let Position { mut y, mut x } = self.cursor_position;
+        let size = self.terminal.size();
+        let height = size.height.saturating_sub(1) as usize;
+        let width = size.width.saturating_sub(1) as usize;
         match key {
             KeyCode::Up => y = y.saturating_sub(1),
-            KeyCode::Down => y = y.saturating_add(1),
+            KeyCode::Down => {
+                if y < height {
+                    y = y.saturating_add(1);
+                }
+            }
             KeyCode::Left => x = x.saturating_sub(1),
-            KeyCode::Right => x = x.saturating_add(1),
+            KeyCode::Right => {
+                if x < width {
+                    x = x.saturating_add(1);
+                }
+            }
+            KeyCode::PageUp => y = 0,
+            KeyCode::PageDown => y = height,
+            KeyCode::Home => x = 0,
+            KeyCode::End => x = width,
             _ => (),
         }
         self.cursor_position = Position { x, y };
@@ -99,7 +114,14 @@ impl Editor {
             Event::Key(key) => {
                 if key.modifiers.is_empty() {
                     match key.code {
-                        KeyCode::Left | KeyCode::Right | KeyCode::Up | KeyCode::Down => {
+                        KeyCode::Left
+                        | KeyCode::Right
+                        | KeyCode::Up
+                        | KeyCode::Down
+                        | KeyCode::PageDown
+                        | KeyCode::PageUp
+                        | KeyCode::End
+                        | KeyCode::Home => {
                             self.move_cursor(key.code);
                         }
                         _ => (),
