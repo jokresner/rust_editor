@@ -1,12 +1,16 @@
-#[warn(clippy::all,clippy::pedantic)]
+mod document;
+#[warn(clippy::all, clippy::pedantic)]
 mod editor;
+mod row;
 mod terminal;
 
-pub use terminal::Terminal;
+pub use document::Document;
 pub use editor::Position;
+pub use row::Row;
+pub use terminal::Terminal;
 
 use editor::Editor;
 
-fn main(){
+fn main() {
     Editor::default().run();
 }
