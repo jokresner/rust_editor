@@ -59,16 +59,16 @@ impl Editor {
         Terminal::flush()
     }
 
-    fn move_cursor(&mut self, key: KeyCode){
-        let Position{mut y, mut x} = self.cursor_position;
+    fn move_cursor(&mut self, key: KeyCode) {
+        let Position { mut y, mut x } = self.cursor_position;
         match key {
             KeyCode::Up => y = y.saturating_sub(1),
-            KeyCode::Down => y= y.saturating_add(1),
+            KeyCode::Down => y = y.saturating_add(1),
             KeyCode::Left => x = x.saturating_sub(1),
             KeyCode::Right => x = x.saturating_add(1),
             _ => (),
         }
-        self.cursor_position = Position{x,y};
+        self.cursor_position = Position { x, y };
     }
 
     fn draw_welcome_message(&self) {
@@ -97,12 +97,20 @@ impl Editor {
         let key = read()?;
         match key {
             Event::Key(key) => {
-                if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('q') {
-                    self.should_quit = true;
-                } else if key.modifiers.intersects(KeyModifiers::all()) {
-                } else{
+                if key.modifiers.is_empty() {
+                    match key.code {
+                        KeyCode::Left | KeyCode::Right | KeyCode::Up | KeyCode::Down => {
+                            self.move_cursor(key.code);
+                        }
+                        _ => (),
+                    }
+                } else {
+                    if key.modifiers.contains(KeyModifiers::CONTROL)
+                        && key.code == KeyCode::Char('q')
+                    {
+                        self.should_quit = true;
+                    }
                 }
-                //TODO add else if for keys up or down or left or right -> run move_cursor
             }
             _ => (),
         }
