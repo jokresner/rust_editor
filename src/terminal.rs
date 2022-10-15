@@ -37,7 +37,7 @@ impl Terminal {
         );
     }
 
-    pub fn clear_line() {
+    pub fn clear_current_line() {
         print!(
             "{}",
             crossterm::terminal::Clear(crossterm::terminal::ClearType::CurrentLine)
