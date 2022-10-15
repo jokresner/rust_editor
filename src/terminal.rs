@@ -20,7 +20,7 @@ impl Terminal {
         Ok(Self {
             size: Size {
                 width: size.0,
-                height: size.1,
+                height: size.1.saturating_sub(2),
             },
             _stdout: enable_raw_mode(),
         })
@@ -46,7 +46,7 @@ impl Terminal {
 
     #[allow(clippy::cast_possible_truncation)]
     pub fn cursor_position(position: &Position) {
-        let Position{mut x, mut y} = position;
+        let Position { mut x, mut y } = position;
         x = x.saturating_add(0);
         y = y.saturating_add(0);
         let x = x as u16;
@@ -64,5 +64,17 @@ impl Terminal {
 
     pub fn cursor_show() {
         print!("{}", crossterm::cursor::Show);
+    }
+
+    pub fn set_bg_color(color: crossterm::style::Color) {
+        print!("{}", crossterm::style::SetBackgroundColor(color));
+    }
+
+    pub fn set_fg_color(color: crossterm::style::Color) {
+        print!("{}", crossterm::style::SetForegroundColor(color));
+    }
+
+    pub fn reset_colors() {
+        print!("{}", crossterm::style::ResetColor);
     }
 }
