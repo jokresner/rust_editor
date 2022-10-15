@@ -216,6 +216,15 @@ impl Editor {
         if let Event::Key(key) = read()? {
             if key.modifiers.is_empty() {
                 match key.code {
+                    KeyCode::Char(c) => {
+                        self.document.insert(&self.cursor_position, c);
+                        self.move_cursor(KeyCode::Right);
+                    }
+                    KeyCode::Delete => self.document.delete(&self.cursor_position),
+                    KeyCode::Backspace => {
+                        self.move_cursor(KeyCode::Left);
+                        self.document.delete(&self.cursor_position);
+                    }
                     KeyCode::Left
                     | KeyCode::Right
                     | KeyCode::Up
