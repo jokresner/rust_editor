@@ -114,14 +114,20 @@ impl Editor {
         Terminal::flush()
     }
 
-    fn save(&mut self){
-        if self.document.file_name.is_none(){
-            let new_name = self.prompt("Save as: ").unwrap_or(Option);
-            if new_name.is_empty(){
+    fn save(&mut self) {
+        if self.document.file_name.is_none() {
+            let new_name = self.prompt("Save as: ").unwrap_or(None);
+            if new_name.is_none() {
                 self.status_message = StatusMessage::from("Save aborted.".to_string());
                 return;
             }
             self.document.file_name = new_name;
+        }
+
+        if self.document.save().is_ok() {
+            self.status_message = StatusMessage::from("File saved successfully.".to_string());
+        } else {
+            self.status_message = StatusMessage::from("Error writing file!".to_string());
         }
     }
 
@@ -254,16 +260,7 @@ impl Editor {
                 } else if key.modifiers.contains(KeyModifiers::CONTROL)
                     && key.code == KeyCode::Char('s')
                 {
-                    if self.document.file_name.is_none() {
-                        self.document.file_name = Some(self.prompt("Save as: ")?);
-                    }
-                    if self.document.save().is_ok() {
-                        self.status_message =
-                            StatusMessage::from("File saved successfully.".to_string());
-                    } else {
-                        self.status_message =
-                            StatusMessage::from("Error writing file!".to_string());
-                    }
+                    self.save();
                 }
             }
         }
@@ -324,15 +321,16 @@ impl Editor {
         }
     }
 
-    fn prompt(&mut self, prompt: &str) -> Result<String, std::io::Error> {
+    fn prompt(&mut self, prompt: &str) -> Result<Option<String>, std::io::Error> {
         let mut result = String::new();
         loop {
             self.status_message = StatusMessage::from(format!("{}{}", prompt, result));
             self.refresh_screen()?;
             if let Event::Key(key) = read()? {
-                if key.code == KeyCode::Char('\n') {
-                    self.status_message = StatusMessage::from(String::new());
-                    break;
+                match key.code {
+                    KeyCode::Char('\n') => break,
+                    KeyCode::Esc => result.truncate(0),
+                    _ => (),
                 }
                 if !key.modifiers.contains(KeyModifiers::CONTROL) {
                     match key.code {
@@ -342,7 +340,11 @@ impl Editor {
                 }
             }
         }
-        Ok(result)
+        self.status_message = StatusMessage::from(String::new());
+        if result.is_empty() {
+            return Ok(None);
+        }
+        Ok(Some(result))
     }
 }
 
