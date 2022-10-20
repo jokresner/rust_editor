@@ -114,6 +114,17 @@ impl Editor {
         Terminal::flush()
     }
 
+    fn save(&mut self){
+        if self.document.file_name.is_none(){
+            let new_name = self.prompt("Save as: ").unwrap_or(Option);
+            if new_name.is_empty(){
+                self.status_message = StatusMessage::from("Save aborted.".to_string());
+                return;
+            }
+            self.document.file_name = new_name;
+        }
+    }
+
     fn move_cursor(&mut self, key: KeyCode) {
         let terminal_height = self.terminal.size().height as usize;
         let Position { mut y, mut x } = self.cursor_position;
@@ -324,7 +335,10 @@ impl Editor {
                     break;
                 }
                 if !key.modifiers.contains(KeyModifiers::CONTROL) {
-                    //result.push(); //TODO pass character
+                    match key.code {
+                        KeyCode::Char(c) => result.push(c),
+                        _ => (),
+                    }
                 }
             }
         }
